@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/index.css">
+    <title>Document</title>
+</head>
+
+<body>
+    <div class="container-text-editor">
+        <div id="editor" style="height: 500px"></div>
+    </div>
+
+    <script src="/lib/ace/build/src-min-noconflict/ace.js"></script>
+    <script>
+        function createAceEditor(info) {
+            console.log(info)
+            var editor = ace.edit("editor");
+            editor.setTheme("ace/theme/one_dark");
+            editor.setFontSize(16);
+            editor.getSession().setMode("ace/mode/"+info.data.type);
+            editor.getSession().setUseWrapMode(true);
+            editor.getSession().setTabSize(4);
+            editor.setValue(info.data.content,1)
+        }
+        function loadText() {
+            let path = "/home/HouXinLin/project/html/demo/index.html"
+            fetch('http://localhost:8080/desktop/api/file/getTextFileContent?path=' + path)
+                .then(response => response.json())
+                .then(data => createAceEditor(data));
+        }
+        loadText()
+
+    </script>
+</body>
+
+</html>
