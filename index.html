@@ -11,24 +11,25 @@
 
 <body>
     <div class="container-text-editor">
-        <div id="editor" style="height: 500px"></div>
+        <div id="editor" style="height: 100%"></div>
     </div>
 
-    <script src="/lib/ace/build/src-min-noconflict/ace.js"></script>
+    <script src="/desktop/webapplication/asdadddddd/lib/ace/build/src-min-noconflict/ace.js"></script>
     <script>
         function createAceEditor(info) {
-            console.log(info)
-            var editor = ace.edit("editor");
-            editor.setTheme("ace/theme/one_dark");
+            var editor = ace.edit("editor", {
+                mode: "ace/mode/javascript",
+                theme:"ace/theme/one_dark"
+            })
             editor.setFontSize(16);
-            editor.getSession().setMode("ace/mode/"+info.data.type);
+            editor.getSession().setMode("ace/mode/" + info.data.type);
             editor.getSession().setUseWrapMode(true);
             editor.getSession().setTabSize(4);
-            editor.setValue(info.data.content,1)
+            editor.setValue(info.data.content, 1)
         }
         function loadText() {
-            let path = "/home/HouXinLin/project/html/demo/index.html"
-            fetch('http://localhost:8080/desktop/api/file/getTextFileContent?path=' + path)
+            const params = new URLSearchParams(window.location.search)
+            fetch('http://localhost:8080/desktop/api/file/getTextFileContent?path=' + params.get("path"))
                 .then(response => response.json())
                 .then(data => createAceEditor(data));
         }
