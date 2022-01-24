@@ -6,33 +6,69 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="css/index.css">
-    <title>Document</title>
+    <title>文件编辑</title>
 </head>
 
 <body>
     <div class="container-text-editor">
-        <div id="editor" style="height: 100%"></div>
+        <div id="editor" style="display: none; height: 100%;background-color: rgba(255, 255, 255, 0);">阿斯顿</div>
     </div>
 
     <script src="/desktop/webapplication/asdadddddd/lib/ace/build/src-min-noconflict/ace.js"></script>
     <script>
-        function createAceEditor(info) {
-            var editor = ace.edit("editor", {
-                mode: "ace/mode/javascript",
-                theme:"ace/theme/one_dark"
-            })
-            editor.setFontSize(16);
-            editor.getSession().setMode("ace/mode/" + info.data.type);
-            editor.getSession().setUseWrapMode(true);
-            editor.getSession().setTabSize(4);
-            editor.setValue(info.data.content, 1)
+        let editFilePath = ""
+
+        let editor = ace.edit("editor", {
+            theme: "ace/theme/one_dark",
+        })
+        editor.getSession().setUseWrapMode(false);
+        editor.setShowPrintMargin(false);
+        editor.setValue("", 1)
+        editor.setFontSize(16);
+        editor.getSession().setTabSize(4);
+        window.addEventListener("message", receiveMessage, true);
+        function receiveMessage(event) {
+            let menuEvent = event.data['menu-event'];
+            handlerAction(menuEvent.action)
+        }
+        function handlerAction(action) {
+            if ("文件/保存" == action) {
+                saveContent();
+                return
+            }
+
+        }
+        function saveContent() {
+            const data = { path: editFilePath, content: editor.getValue() };
+            var params = Object.keys(data).map(function (key) {
+                return encodeURIComponent(key) + "=" + encodeURIComponent(data[key]);
+            }).join("&");
+
+            fetch('/desktop/api/file/setTextFileContent', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: params
+            }).then(response => response.json())
+                .then(data => {
+                    if (data.status == 0) {
+                        window.parent.postMessage({ "action": "notification", "param": { "message": "保存成功", "type": "success" } }, "*")
+                    }
+                });
         }
         function loadText() {
             const params = new URLSearchParams(window.location.search)
-            fetch('http://localhost:8080/desktop/api/file/getTextFileContent?path=' + params.get("path"))
+            editFilePath = params.get("path")
+            fetch('/desktop/api/file/getTextFileContent?path=' + editFilePath)
                 .then(response => response.json())
-                .then(data => createAceEditor(data));
+                .then(data => {
+                    document.getElementById("editor").style.display = "block"
+                    editor.getSession().setMode("ace/mode/" + data.data.type);
+                    editor.setValue(data.data.content, 1)
+                });
         }
+
         loadText()
 
     </script>
